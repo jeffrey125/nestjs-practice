@@ -7,6 +7,7 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { User } from './typeorm/entities/User';
 
 /*
   NOTES
@@ -54,8 +55,8 @@ type AppConfigType = {
         username: configService.get('DB_USER'),
         password: configService.get('DB_PASS'),
         database: configService.get('DB_NAME'),
-        // Our models
-        entities: [],
+        // Our models imported from the typeorm entites folder
+        entities: [User],
         // NOTES synchronize field is where it listens any changes from our app and reflects immediatly
         synchronize:
           configService.get('NODE_ENV') === 'development' ? true : false,
