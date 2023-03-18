@@ -4,11 +4,13 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
 import {
   CreateUserDTO,
+  DeleteUserDTO,
   GetUserByIdDTO,
   UpdateUserDTO,
 } from 'src/users/dtos/User.dto';
@@ -32,17 +34,20 @@ export class UsersController {
   }
 
   @Get('/:id')
-  getUsersById(@Param() id: GetUserByIdDTO['id']) {
+  getUsersById(@Param('id', ParseIntPipe) id: GetUserByIdDTO['id']) {
     return this.userService.getUserById({ id });
   }
 
   @Put('/:id')
-  updateUser(@Param() id: number, @Body() reqBody: UpdateUserDTO) {
+  updateUser(
+    @Param('id', ParseIntPipe) id: UpdateUserDTO['id'],
+    @Body() reqBody: UpdateUserDTO,
+  ) {
     return this.userService.updateUser({ id, ...reqBody });
   }
 
   @Delete('/:id')
-  deleteUser(@Param() id: UpdateUserDTO['id']) {
+  deleteUser(@Param('id', ParseIntPipe) id: DeleteUserDTO['id']) {
     return this.userService.deleteUser({ id });
   }
 

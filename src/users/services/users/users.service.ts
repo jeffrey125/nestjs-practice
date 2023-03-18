@@ -26,10 +26,12 @@ export class UsersService {
   ) {}
 
   private genericError(err: Error) {
-    console.log(err);
+    const notFoundError = err?.message.includes('Cannot Find User');
 
     return {
-      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      status: notFoundError
+        ? HttpStatus.NOT_FOUND
+        : HttpStatus.INTERNAL_SERVER_ERROR,
       error: err?.message || 'Something went wrong!',
       data: null,
     };
@@ -82,16 +84,24 @@ export class UsersService {
 
   public async getUserById({ id }: GetUserByIdDTO) {
     try {
-      const selectedUser = await this.userRepository.findOne({
-        where: { id },
-        select: {
-          username: true,
-          createdAt: true,
-          id: true,
-        },
-      });
+      const selectedUser = await this.userRepository
+        .findOneOrFail({
+          where: { id },
+          select: {
+            username: true,
+            createdAt: true,
+            id: true,
+          },
+        })
+        .catch(() => {
+          throw new Error('Cannot Find User Data!');
+        });
 
-      return selectedUser;
+      return {
+        status: HttpStatus.OK,
+        error: '',
+        data: selectedUser,
+      };
     } catch (err) {
       return this.genericError(err);
     }
