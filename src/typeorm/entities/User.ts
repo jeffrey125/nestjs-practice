@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseModel } from './BaseModel';
+import { Profile } from './Profile';
 
 // Entity decorator tells the typeorm that the class will be a table
 @Entity({ name: 'users' })
@@ -19,4 +20,8 @@ export class User extends BaseModel {
     nullable: true,
   })
   authStrategy: string;
+
+  @OneToOne(() => Profile)
+  @JoinColumn()
+  profile: Profile;
 }
