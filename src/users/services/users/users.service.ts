@@ -91,6 +91,9 @@ export class UsersService {
             createdAt: true,
             id: true,
           },
+          relations: {
+            profile: true,
+          },
         })
         .catch(() => {
           throw new Error('Cannot Find User Data!');
