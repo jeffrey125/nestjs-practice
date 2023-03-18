@@ -62,7 +62,6 @@ export class UsersService {
       // Create method just creates an entity
       const newUser = this.userRepository.create({
         ...userDetails,
-        createdAt: new Date(),
       });
 
       // NOTES in real world app we need to hash the password
@@ -124,25 +123,18 @@ export class UsersService {
 
   public async deleteUser({ id }: DeleteUserDTO) {
     try {
-      const deletedUser = await this.userRepository
-        .exist({ where: { id } })
-        .then(
-          async (val) =>
-            val.valueOf() && (await this.userRepository.softDelete({ id })),
-        )
-        .catch((reason) => {
-          throw reason;
-        });
+      const selectedUser = await this.getUserById({ id });
 
-      return deletedUser
-        ? {
-            status: HttpStatus.NO_CONTENT,
-            error: '',
-          }
-        : {
-            status: HttpStatus.NOT_FOUND,
-            error: 'User Not Found!',
-          };
+      if (selectedUser.status === HttpStatus.NOT_FOUND) {
+        throw selectedUser.error;
+      }
+
+      await this.userRepository.softDelete({ id });
+
+      return {
+        status: HttpStatus.NO_CONTENT,
+        error: '',
+      };
     } catch (err) {
       return this.genericError(err);
     }
