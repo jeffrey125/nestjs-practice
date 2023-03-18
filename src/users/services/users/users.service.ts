@@ -1,6 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/typeorm/entities/User';
+import {
+  DeleteUserDTO,
+  GetUserByIdDTO,
+  UpdateUserDTO,
+} from 'src/users/dtos/User.dto';
 import { CreateUserParams } from 'src/utils/types';
 import { Repository } from 'typeorm';
 
@@ -20,6 +25,16 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
+  private genericError(err: Error) {
+    console.log(err);
+
+    return {
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      error: err?.message || 'Something went wrong!',
+      data: null,
+    };
+  }
+
   public async getUsers() {
     try {
       const userList = await this.userRepository.find();
@@ -30,11 +45,7 @@ export class UsersService {
         data: userList,
       };
     } catch (err) {
-      return {
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: err.message,
-        data: null,
-      };
+      return this.genericError(err);
     }
   }
 
@@ -46,8 +57,7 @@ export class UsersService {
         createdAt: new Date(),
       });
 
-      // HASH the password
-
+      // NOTES in real world app we need to hash the password
       const saveUser = await this.userRepository.save(newUser);
 
       return {
@@ -56,11 +66,60 @@ export class UsersService {
         data: saveUser,
       };
     } catch (err) {
+      return this.genericError(err);
+    }
+  }
+
+  public async getUserById({ id }: GetUserByIdDTO) {
+    try {
+      const selectedUser = await this.userRepository.findOneBy({ id });
+
+      console.log(selectedUser);
+
+      return selectedUser;
+    } catch (err) {
+      return this.genericError(err);
+    }
+  }
+
+  public async updateUser({ id, ...newUserData }: UpdateUserDTO) {
+    try {
+      await this.getUserById({ id });
+      await this.userRepository.update({ id }, { ...newUserData });
+
       return {
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: err.message || 'Something went wrong!',
-        data: null,
+        status: HttpStatus.OK,
+        error: '',
+        data: newUserData,
       };
+    } catch (err) {
+      return this.genericError(err);
+    }
+  }
+
+  public async deleteUser({ id }: DeleteUserDTO) {
+    try {
+      const deletedUser = await this.userRepository
+        .exist({ where: { id } })
+        .then(
+          async (val) =>
+            val.valueOf() && (await this.userRepository.softDelete({ id })),
+        )
+        .catch((reason) => {
+          throw reason;
+        });
+
+      return deletedUser
+        ? {
+            status: HttpStatus.NO_CONTENT,
+            error: '',
+          }
+        : {
+            status: HttpStatus.NOT_FOUND,
+            error: 'User Not Found!',
+          };
+    } catch (err) {
+      return this.genericError(err);
     }
   }
 }
