@@ -37,7 +37,13 @@ export class UsersService {
 
   public async getUsers() {
     try {
-      const userList = await this.userRepository.find();
+      const userList = await this.userRepository.find({
+        select: {
+          username: true,
+          createdAt: true,
+          id: true,
+        },
+      });
 
       return {
         status: HttpStatus.OK,
@@ -63,7 +69,11 @@ export class UsersService {
       return {
         status: HttpStatus.CREATED,
         message: 'Success to create user!',
-        data: saveUser,
+        data: {
+          id: saveUser.id,
+          username: saveUser.username,
+          createdAt: saveUser.createdAt,
+        },
       };
     } catch (err) {
       return this.genericError(err);
@@ -72,9 +82,14 @@ export class UsersService {
 
   public async getUserById({ id }: GetUserByIdDTO) {
     try {
-      const selectedUser = await this.userRepository.findOneBy({ id });
-
-      console.log(selectedUser);
+      const selectedUser = await this.userRepository.findOne({
+        where: { id },
+        select: {
+          username: true,
+          createdAt: true,
+          id: true,
+        },
+      });
 
       return selectedUser;
     } catch (err) {
