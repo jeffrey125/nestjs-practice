@@ -15,3 +15,10 @@ export class UpdateUserDTO extends CreateUserDTO {
 }
 
 export class DeleteUserDTO extends GetUserByIdDTO {}
+
+export class CreateUserProfileDTO extends GetUserByIdDTO {
+  firstName: string;
+  lastName: string;
+  userImage: string;
+  bio: string;
+}

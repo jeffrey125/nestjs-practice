@@ -1,7 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Profile } from 'src/typeorm/entities/Profile';
 import { User } from 'src/typeorm/entities/User';
 import {
+  CreateUserProfileDTO,
   DeleteUserDTO,
   GetUserByIdDTO,
   UpdateUserDTO,
@@ -18,21 +20,33 @@ import { Repository } from 'typeorm';
 
 */
 
+enum ErrorTypesMessage {
+  NOT_FOUND = 'Data Not Found!',
+  GENERIC_ERROR = 'Something went wrong, please try again later!',
+  BAD_REQUEST = 'Rejected due to Bad Request!',
+}
+
 @Injectable()
 export class UsersService {
   constructor(
     // Injecting a repository to interact on our DB using typeorm
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Profile)
+    private userProfileRepository: Repository<Profile>,
   ) {}
 
   private genericError(err: Error) {
-    const notFoundError = err?.message.includes('Cannot Find User');
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+    if (err.message === ErrorTypesMessage.NOT_FOUND)
+      status = HttpStatus.NOT_FOUND;
+
+    if (err.message === ErrorTypesMessage.BAD_REQUEST)
+      status = HttpStatus.BAD_REQUEST;
 
     return {
-      status: notFoundError
-        ? HttpStatus.NOT_FOUND
-        : HttpStatus.INTERNAL_SERVER_ERROR,
-      error: err?.message || 'Something went wrong!',
+      status,
+      error: err?.message || ErrorTypesMessage.GENERIC_ERROR,
       data: null,
     };
   }
@@ -96,7 +110,7 @@ export class UsersService {
           },
         })
         .catch(() => {
-          throw new Error('Cannot Find User Data!');
+          throw new Error(ErrorTypesMessage.NOT_FOUND);
         });
 
       return {
@@ -137,6 +151,44 @@ export class UsersService {
       return {
         status: HttpStatus.NO_CONTENT,
         error: '',
+      };
+    } catch (err) {
+      return this.genericError(err);
+    }
+  }
+
+  public async createUserProfile({
+    id,
+    ...userProfileDetails
+  }: CreateUserProfileDTO) {
+    try {
+      const selectedUser = await this.userRepository.findOne({
+        where: { id },
+        relations: { profile: true },
+      });
+
+      if (!selectedUser.hasId()) {
+        throw new Error(ErrorTypesMessage.NOT_FOUND);
+      }
+
+      if (selectedUser?.profile.id) {
+        throw new Error(ErrorTypesMessage.BAD_REQUEST);
+      }
+
+      const newProfile = this.userProfileRepository.create(userProfileDetails);
+      const userProfileData = await this.userProfileRepository.save(newProfile);
+
+      const updatedUserData = {
+        ...selectedUser,
+        profile: userProfileData,
+      };
+
+      await this.userRepository.save(updatedUserData);
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Success to create user profile!',
+        data: userProfileData,
       };
     } catch (err) {
       return this.genericError(err);

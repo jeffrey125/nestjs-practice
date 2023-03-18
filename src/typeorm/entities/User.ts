@@ -21,7 +21,7 @@ export class User extends BaseModel {
   })
   authStrategy: string;
 
-  @OneToOne(() => Profile, { cascade: ['soft-remove', 'recover', 'update'] })
+  @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;
 }

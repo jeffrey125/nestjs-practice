@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   CreateUserDTO,
+  CreateUserProfileDTO,
   DeleteUserDTO,
   GetUserByIdDTO,
   UpdateUserDTO,
@@ -33,12 +34,17 @@ export class UsersController {
     return this.userService.getUsers();
   }
 
-  @Get('/:id')
+  @Post()
+  createUser(@Body() createUserBody: CreateUserDTO) {
+    return this.userService.createUser(createUserBody);
+  }
+
+  @Get(':id')
   getUsersById(@Param('id', ParseIntPipe) id: GetUserByIdDTO['id']) {
     return this.userService.getUserById({ id });
   }
 
-  @Put('/:id')
+  @Put(':id')
   updateUser(
     @Param('id', ParseIntPipe) id: UpdateUserDTO['id'],
     @Body() reqBody: UpdateUserDTO,
@@ -46,13 +52,16 @@ export class UsersController {
     return this.userService.updateUser({ id, ...reqBody });
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   deleteUser(@Param('id', ParseIntPipe) id: DeleteUserDTO['id']) {
     return this.userService.deleteUser({ id });
   }
 
-  @Post()
-  createUser(@Body() createUserBody: CreateUserDTO) {
-    return this.userService.createUser(createUserBody);
+  @Post(':id/profile')
+  createUserProfile(
+    @Param('id', ParseIntPipe) id: CreateUserProfileDTO['id'],
+    @Body() createUserProfileBody: Omit<CreateUserProfileDTO, 'id'>,
+  ) {
+    return this.userService.createUserProfile({ id, ...createUserProfileBody });
   }
 }
