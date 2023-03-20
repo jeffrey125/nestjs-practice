@@ -29,6 +29,10 @@
 Also I used this starter template to practice the Nestjs backend framework.
 Credits to this [Youtube Video](https://www.youtube.com/watch?v=W1gvIw0GNl8) for a great crash course for nestjs and the Nestjs docs
 
+**Important Note**
+
+- Please refer to the [.env.example file](.env.example) for the env vars used on this starter template
+
 ## Installation
 
 ```bash
