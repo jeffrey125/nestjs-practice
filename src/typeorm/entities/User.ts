@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { BaseModel } from './BaseModel';
 import { Profile } from './Profile';
+import { Post } from './Post';
 
 // Entity decorator tells the typeorm that the class will be a table
 @Entity({ name: 'users' })
@@ -21,7 +22,11 @@ export class User extends BaseModel {
   })
   authStrategy: string;
 
-  @OneToOne(() => Profile)
+  @OneToOne(() => Profile, { cascade: ['remove', 'update'] })
   @JoinColumn()
   profile: Profile;
+
+  @OneToMany(() => Post, (post) => post.user, { cascade: ['remove', 'update'] })
+  @JoinColumn()
+  posts: Post[];
 }
