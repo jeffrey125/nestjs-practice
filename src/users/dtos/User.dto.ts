@@ -1,5 +1,5 @@
 // This file defines the incoming payload type
-// You can also use a validation here using JOI
+// You can also use a validation here using Class validator
 
 export class CreateUserDTO {
   username: string;
@@ -21,4 +21,9 @@ export class CreateUserProfileDTO extends GetUserByIdDTO {
   lastName: string;
   userImage: string;
   bio: string;
+}
+
+export class CreateUserPostDTO extends GetUserByIdDTO {
+  title: string;
+  description: string;
 }

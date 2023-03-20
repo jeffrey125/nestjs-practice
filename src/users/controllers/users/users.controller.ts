@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   CreateUserDTO,
+  CreateUserPostDTO,
   CreateUserProfileDTO,
   DeleteUserDTO,
   GetUserByIdDTO,
@@ -63,5 +64,13 @@ export class UsersController {
     @Body() createUserProfileBody: Omit<CreateUserProfileDTO, 'id'>,
   ) {
     return this.userService.createUserProfile({ id, ...createUserProfileBody });
+  }
+
+  @Post(':id/posts')
+  createUserPost(
+    @Param('id', ParseIntPipe) id: CreateUserPostDTO['id'],
+    @Body() createUserPostBody: Omit<CreateUserPostDTO, 'id'>,
+  ) {
+    return this.userService.createUserPost({ id, ...createUserPostBody });
   }
 }

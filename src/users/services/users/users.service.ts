@@ -1,8 +1,10 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Post } from 'src/typeorm/entities/Post';
 import { Profile } from 'src/typeorm/entities/Profile';
 import { User } from 'src/typeorm/entities/User';
 import {
+  CreateUserPostDTO,
   CreateUserProfileDTO,
   DeleteUserDTO,
   GetUserByIdDTO,
@@ -33,6 +35,8 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Profile)
     private userProfileRepository: Repository<Profile>,
+    @InjectRepository(Post)
+    private userPostRepository: Repository<Post>,
   ) {}
 
   private genericError(err: Error) {
@@ -190,6 +194,30 @@ export class UsersService {
         message: 'Success to create user profile!',
         data: userProfileData,
       };
+    } catch (err) {
+      return this.genericError(err);
+    }
+  }
+
+  public async createUserPost({ id, ...newUserPost }: CreateUserPostDTO) {
+    try {
+      if (!newUserPost.description || !newUserPost.title) {
+        throw new Error(ErrorTypesMessage.BAD_REQUEST);
+      }
+
+      const userData = await this.userRepository.findOneBy({ id });
+
+      if (!userData) {
+        throw new Error(ErrorTypesMessage.NOT_FOUND);
+      }
+
+      const userPostData = await this.userPostRepository.save(newUserPost);
+      const updatedUserData = {
+        ...userData,
+        posts: [...userData.posts, userPostData],
+      };
+
+      await this.userRepository.save(updatedUserData);
     } catch (err) {
       return this.genericError(err);
     }
