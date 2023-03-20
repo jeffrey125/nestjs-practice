@@ -42,6 +42,8 @@ export class UsersService {
   private genericError(err: Error) {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
 
+    console.log(err);
+
     if (err.message === ErrorTypesMessage.NOT_FOUND)
       status = HttpStatus.NOT_FOUND;
 
@@ -111,6 +113,7 @@ export class UsersService {
           },
           relations: {
             profile: true,
+            posts: true,
           },
         })
         .catch(() => {
@@ -205,7 +208,15 @@ export class UsersService {
         throw new Error(ErrorTypesMessage.BAD_REQUEST);
       }
 
-      const userData = await this.userRepository.findOneBy({ id });
+      const userData = await this.userRepository.findOne({
+        select: {
+          id: true,
+          username: true,
+          posts: true,
+        },
+        where: { id },
+        relations: { posts: true },
+      });
 
       if (!userData) {
         throw new Error(ErrorTypesMessage.NOT_FOUND);
@@ -218,6 +229,17 @@ export class UsersService {
       };
 
       await this.userRepository.save(updatedUserData);
+
+      const newPostData = this.userPostRepository.create({
+        ...userPostData,
+        user: userData,
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Success to create post!',
+        data: newPostData,
+      };
     } catch (err) {
       return this.genericError(err);
     }

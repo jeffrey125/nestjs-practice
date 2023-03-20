@@ -66,7 +66,7 @@ export class UsersController {
     return this.userService.createUserProfile({ id, ...createUserProfileBody });
   }
 
-  @Post(':id/posts')
+  @Post(':id/post')
   createUserPost(
     @Param('id', ParseIntPipe) id: CreateUserPostDTO['id'],
     @Body() createUserPostBody: Omit<CreateUserPostDTO, 'id'>,
