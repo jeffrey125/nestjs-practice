@@ -10,6 +10,7 @@ import { AppService } from './app.service';
 import { User } from './typeorm/entities/User';
 import { UsersModule } from './users/users.module';
 import { Profile } from './typeorm/entities/Profile';
+import { Post } from './typeorm/entities/Post';
 
 /*
   NOTES
@@ -58,7 +59,7 @@ type AppConfigType = {
         password: configService.get('DB_PASS'),
         database: configService.get('DB_NAME'),
         // Our models imported from the typeorm entites folder
-        entities: [User, Profile],
+        entities: [User, Profile, Post],
         // NOTES synchronize field is where it listens any changes from our app and reflects immediatly
         synchronize:
           configService.get('NODE_ENV') === 'development' ? true : false,
