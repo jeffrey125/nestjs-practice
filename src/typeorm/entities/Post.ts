@@ -12,8 +12,6 @@ export class Post extends BaseModel {
 
   // This is how you set up the Many to One | One to Many relationship
   // NOTES second argument points out the reference of the model of the Parent/Children Entity
-  @ManyToOne(() => User, (user) => user.posts, {
-    cascade: ['remove', 'update'],
-  })
+  @ManyToOne(() => User, (user) => user.posts)
   user: User;
 }
